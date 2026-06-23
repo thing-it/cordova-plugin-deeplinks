@@ -6,7 +6,7 @@ If file name has no changed - hook will do nothing.
 
 var path = require('path');
 var fs = require('fs');
-var ConfigXmlHelper = require('./lib/configXmlHelper.js');
+var cordova_ios = require('cordova-ios');
 
 module.exports = function(ctx) {
   run(ctx);
@@ -19,25 +19,25 @@ module.exports = function(ctx) {
  */
 function run(ctx) {
   var projectRoot = ctx.opts.projectRoot;
-  var iosProjectFilePath = path.join(projectRoot, 'platforms', 'ios');
-  var configXmlHelper = new ConfigXmlHelper(ctx);
-  var newProjectName = configXmlHelper.getProjectName();
+  var platformPath = path.join(projectRoot, 'platforms', 'ios');
+  var iosProject = new cordova_ios('ios', platformPath);
+  var projName = path.basename(iosProject.locations.xcodeCordovaProj);
+  var resourcesDir = path.join(iosProject.locations.xcodeCordovaProj, 'Resources');
 
-  var oldProjectName = getOldProjectName(iosProjectFilePath);
-
-  // if name has not changed - do nothing
-  if (oldProjectName.length && oldProjectName === newProjectName) {
+  var oldEntitlementsFilePath = findAnyEntitlementsFile(resourcesDir);
+  if (!oldEntitlementsFilePath) {
     return;
   }
 
-  console.log('Project name has changed. Renaming .entitlements file.');
+  var desiredEntitlementsPath = path.join(resourcesDir, projName + '.entitlements');
+  if (oldEntitlementsFilePath === desiredEntitlementsPath) {
+    return;
+  }
 
-  // if it does - rename it
-  var oldEntitlementsFilePath = path.join(iosProjectFilePath, oldProjectName, 'Resources', oldProjectName + '.entitlements');
-  var newEntitlementsFilePath = path.join(iosProjectFilePath, oldProjectName, 'Resources', newProjectName + '.entitlements');
+  console.log('Renaming .entitlements file to match Cordova iOS project name.');
 
   try {
-    fs.renameSync(oldEntitlementsFilePath, newEntitlementsFilePath);
+    fs.renameSync(oldEntitlementsFilePath, desiredEntitlementsPath);
   } catch (err) {
     console.warn('Failed to rename .entitlements file.');
     console.warn(err);
@@ -47,28 +47,26 @@ function run(ctx) {
 // region Private API
 
 /**
- * Get old name of the project.
- * Name is detected by the name of the .xcodeproj file.
+ * Find an entitlements file under the given Resources dir.
  *
- * @param {String} projectDir absolute path to ios project directory
- * @return {String} old project name
+ * @param {String} resourcesDir absolute path to iOS Resources dir
+ * @return {String} absolute path to entitlements file or empty string
  */
-function getOldProjectName(projectDir) {
-  var files = [];
+function findAnyEntitlementsFile(resourcesDir) {
+  var files;
   try {
-    files = fs.readdirSync(projectDir);
+    files = fs.readdirSync(resourcesDir);
   } catch (err) {
     return '';
   }
 
-  var projectFile = '';
-  files.forEach(function(fileName) {
-    if (path.extname(fileName) === '.xcodeproj') {
-      projectFile = path.basename(fileName, '.xcodeproj');
+  for (var i = 0; i < files.length; i++) {
+    if (path.extname(files[i]) === '.entitlements') {
+      return path.join(resourcesDir, files[i]);
     }
-  });
+  }
 
-  return projectFile;
+  return '';
 }
 
 // endregion
