@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.0](https://github.com/thing-it/cordova-plugin-deeplinks/compare/v1.1.10...v2.0.0)
+
+
+### Bug Fixes
+
+* **ios:** cordova-ios 8 compatibility (UIScene-safe AppDelegate extension, use cordova-ios Node API for iOS project paths, set iOS deployment target to 13.0)
+
 ### [1.1.1](https://github.com/e-imaxina/cordova-plugin-deeplinks/compare/v1.1.0...v1.1.1) (2019-08-13)
 
 
