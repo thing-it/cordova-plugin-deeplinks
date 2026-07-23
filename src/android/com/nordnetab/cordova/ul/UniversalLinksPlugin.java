@@ -207,7 +207,11 @@ public class UniversalLinksPlugin extends CordovaPlugin {
      */
     private ULHost findHostByUrl(Uri url) {
         ULHost host = null;
-        final String launchHost = url.getHost().toLowerCase();
+        final String rawHost = url.getHost();
+        if (rawHost == null) {
+            return null;
+        }
+        final String launchHost = rawHost.toLowerCase();
         for (ULHost supportedHost : supportedHosts) {
             if (supportedHost.getName().equals(launchHost) ||
                     supportedHost.getName().startsWith("*.") && launchHost.endsWith(supportedHost.getName().substring(1))) {
