@@ -1,0 +1,17 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: daily
+      time: '03:00'
+    # Match Aikido safe-chain's default minimum package age (48h) so
+    # Dependabot never proposes a release that CI's `npm ci` would then
+    # reject as too fresh. Keep in sync with min-release-age in .npmrc.
+    # @thing-it is our own registry, consumed right after publish, so it's
+    # exempt from the wait.
+    cooldown:
+      default-days: 2
+      exclude:
+        - '@thing-it/*'
